@@ -2,3 +2,5 @@ Flask
 pytube
 gunicorn
 yt_dlp
+pip install --upgrade yt-dlp
+pip install --upgrade pytube
