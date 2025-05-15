@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- SEO Meta Tags -->
+    <title>Free YouTube Video Downloader | DownTube</title>
+    <meta name="description" content="DownTube lets you download YouTube videos in HD, MP4, M4A formats instantly. Fast and free YouTube downloader for all devices.">
+    <meta name="keywords" content="YouTube Downloader, YouTube Video Download, HD MP4 Downloader, Download YouTube Audio, 1080p, 720p, 4K, M4A">
+    <meta name="author" content="DownTube Team">
+
+    <!-- Open Graph Meta (for sharing on Facebook, LinkedIn etc.) -->
+    <meta property="og:title" content="Download YouTube Videos Fast & Free - DownTube">
+    <meta property="og:description" content="Download videos from YouTube in HD, MP4, or M4A formats. 100% free and mobile-friendly.">
+    <meta property="og:image" content="{{ video.thumbnail if video else '/static/og-thumbnail.png' }}">
+    <meta property="og:url" content="https://yourdomain.com/">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Card Meta -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Download YouTube Videos Instantly">
+    <meta name="twitter:description" content="Download any YouTube video in HD/MP4 formats. No ads, no tracking.">
+    <meta name="twitter:image" content="{{ video.thumbnail if video else '/static/og-thumbnail.png' }}">
+
+    <!-- Favicon -->
+    <link rel="icon" href="/static/favicon.png" type="image/png">
+
+    <!-- Mobile/Apple -->
+    <meta name="theme-color" content="#ff0000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <!-- Font & Styles -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Segoe+UI:400,600&display=swap">
+<style>
+        :root {
+            --primary: #ff0000;
+            --primary-dark: #cc0000;
+            --secondary: #282828;
+            --text: #333333;
+            --light: #f9f9f9;
+            --border: #e0e0e0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .logo svg {
+            margin-right: 10px;
+        }
+        
+        .subtitle {
+            color: var(--secondary);
+            font-size: 1rem;
+        }
+        
+        .search-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .input-group {
+            display: flex;
+            margin-bottom: 1rem;
+        }
+        
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid var(--border);
+            border-radius: 8px 0 0 8px;
+            font-size: 1rem;
+            transition: border 0.3s ease;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .fetch-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0 1.5rem;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+        
+        .fetch-btn:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .error-msg {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 12px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+        
+        .video-result {
+            background-color: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .video-header {
+            display: flex;
+            margin-bottom: 1.5rem;
+            align-items: flex-start;
+        }
+        
+        .thumbnail {
+            width: 240px;
+            border-radius: 8px;
+            margin-right: 1.5rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .video-info {
+            flex: 1;
+        }
+        
+        .video-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--secondary);
+        }
+        
+        .video-uploader {
+            color: #666;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .video-duration {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .quality-info {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+        
+        .download-options {
+            background-color: #f8f8f8;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--secondary);
+        }
+        
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            background-color: white;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .download-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+        
+        .download-btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .download-btn svg {
+            margin-right: 8px;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 2rem;
+            color: #888;
+            font-size: 0.8rem;
+        }
+        
+        @media (max-width: 768px) {
+            .video-header {
+                flex-direction: column;
+            }
+            
+            .thumbnail {
+                width: 100%;
+                margin-right: 0;
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22.5 6.9c-.2-.8-.9-1.5-1.7-1.7C19.2 4.8 12 4.8 12 4.8s-7.2 0-8.8.4c-.8.2-1.5.9-1.7 1.7C1.2 8.5 1.2 12 1.2 12s0 3.5.4 5.1c.2.8.9 1.5 1.7 1.7 1.6.4 8.8.4 8.8.4s7.2 0 8.8-.4c.8-.2 1.5-.9 1.7-1.7.4-1.6.4-5.1.4-5.1s0-3.5-.4-5.1z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M9.8 15.2l5.8-3.2-5.8-3.2v6.4z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                YT Video Downloader
+            </div>
+            <p class="subtitle">Download your favorite videos in just a few clicks</p>
+        </header>
+        
+        <div class="search-container">
+            <form method="POST">
+                <div class="input-group">
+                    <input type="text" name="url" placeholder="Paste YouTube URL here" required>
+                    <button type="submit" class="fetch-btn">Fetch Video</button>
+                </div>
+            </form>
+            
+            {% if error %}
+            <div class="error-msg">
+                {{ error }}
+            </div>
+            {% endif %}
+        </div>
+        
+        {% if video %}
+        <div class="video-result">
+            <div class="video-header">
+                <img class="thumbnail" src="{{ video.thumbnail }}" alt="Video thumbnail">
+                <div class="video-info">
+                    <h2 class="video-title">{{ video.title }}</h2>
+                    {% if video.uploader %}
+                    <p class="video-uploader">By: {{ video.uploader }}</p>
+                    {% endif %}
+                    {% if video.duration %}
+                    <p class="video-duration">Duration: {{ (video.duration / 60)|round(1) }} min</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="download-options">
+                <form method="POST" action="/download">
+                    <input type="hidden" name="url" value="{{ video.url }}">
+                    <input type="hidden" name="video_id" value="{{ video.video_id }}">
+                    <div class="form-group">
+                        <label for="format_id">Select Quality:</label>
+                        <select name="format_id" id="format_id" required>
+                            <option value="">Select Quality</option>
+                            {% for format in video.formats %}
+                                <option value="{{ format.format_id }}">{{ format.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <p class="quality-info">Higher quality options will yield better video and audio quality.</p>
+                    </div>
+                    <button type="submit" class="download-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M7 10l5 5 5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12 15V3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Download Now
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="footer">
+            &copy; 2025 YouTube Downloader - Use responsibly and respect copyright laws
+        </div>
+    </div>
+</body>
+</html>

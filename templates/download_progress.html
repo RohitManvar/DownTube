@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- SEO Meta Tags -->
+    <title>Download Progress | DownTube</title>
+    <meta name="description" content="Track the real-time download progress of your YouTube video with DownTube. Fast, secure, and user-friendly.">
+    <meta name="keywords" content="YouTube Downloader, Download Progress, MP4, M4A, Video Download, Real-Time Progress">
+    <meta name="author" content="DownTube Team">
+
+    <!-- Open Graph Meta (for social media sharing) -->
+    <meta property="og:title" content="Downloading YouTube Video | DownTube">
+    <meta property="og:description" content="See your YouTube video download status live. 100% free, fast, and easy.">
+    <meta property="og:image" content="{{ video.thumbnail if video else '/static/og-thumbnail.png' }}">
+    <meta property="og:url" content="https://yourdomain.com/download">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Download in Progress | DownTube">
+    <meta name="twitter:description" content="Downloading your YouTube video... Stay tuned for completion.">
+    <meta name="twitter:image" content="{{ video.thumbnail if video else '/static/og-thumbnail.png' }}">
+
+    <!-- Mobile & UX Enhancements -->
+    <meta name="theme-color" content="#ff0000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <!-- Favicon -->
+    <link rel="icon" href="/static/favicon.png" type="image/png">
+
+    <!-- Fonts (optional) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Segoe+UI:400,600&display=swap">
+<style>
+        :root {
+            --primary: #ff0000;
+            --primary-dark: #cc0000;
+            --secondary: #282828;
+            --text: #333333;
+            --light: #f9f9f9;
+            --border: #e0e0e0;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --error: #f44336;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .logo svg {
+            margin-right: 10px;
+        }
+        
+        .subtitle {
+            color: var(--secondary);
+            font-size: 1rem;
+        }
+        
+        .download-progress-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .progress-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--secondary);
+        }
+        
+        .progress-bar-container {
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            height: 25px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-bar {
+            background-color: var(--primary);
+            height: 100%;
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .progress-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+            z-index: 1;
+        }
+        
+        .download-info {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .info-item {
+            background-color: #f8f8f8;
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            flex: 1;
+            min-width: 200px;
+            margin-right: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .info-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--secondary);
+        }
+        
+        .download-status {
+            margin-bottom: 1.5rem;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .status-starting, .status-downloading {
+            background-color: #e3f2fd;
+            color: #1565c0;
+        }
+        
+        .status-processing {
+            background-color: #fff8e1;
+            color: #f57f17;
+        }
+        
+        .status-complete {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .status-error {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+        }
+        
+        .btn-success:hover {
+            background-color: #388e3c;
+        }
+        
+        .btn svg {
+            margin-right: 8px;
+        }
+        
+        .btns-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .btn-disabled {
+            background-color: #b0b0b0;
+            cursor: not-allowed;
+        }
+        
+        .btn-disabled:hover {
+            background-color: #b0b0b0;
+            transform: none;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 2rem;
+            color: #888;
+            font-size: 0.8rem;
+        }
+        
+        @media (max-width: 768px) {
+            .download-info {
+                flex-direction: column;
+            }
+            
+            .info-item {
+                margin-right: 0;
+                width: 100%;
+            }
+        }
+        
+        .progress-spinner {
+            animation: spinner 1.5s linear infinite;
+            width: 24px;
+            height: 24px;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spinner {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22.5 6.9c-.2-.8-.9-1.5-1.7-1.7C19.2 4.8 12 4.8 12 4.8s-7.2 0-8.8.4c-.8.2-1.5.9-1.7 1.7C1.2 8.5 1.2 12 1.2 12s0 3.5.4 5.1c.2.8.9 1.5 1.7 1.7 1.6.4 8.8.4 8.8.4s7.2 0 8.8-.4c.8-.2 1.5-.9 1.7-1.7.4-1.6.4-5.1.4-5.1s0-3.5-.4-5.1z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M9.8 15.2l5.8-3.2-5.8-3.2v6.4z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                YT Video Downloader
+            </div>
+            <p class="subtitle">Download your favorite videos in just a few clicks</p>
+        </header>
+        
+        <div class="download-progress-container">
+            <h2 class="progress-title">Downloading Your Video</h2>
+            
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="download-progress-bar" style="width: 0%"></div>
+                <div class="progress-text" id="download-progress-text">0%</div>
+            </div>
+            
+            <div class="download-info">
+                <div class="info-item">
+                    <div class="info-label">Status</div>
+                    <div class="info-value" id="download-status-text">Starting download...</div>
+                </div>
+            </div>
+            
+            <div class="download-status status-starting" id="download-status-container">
+                <svg class="progress-spinner" viewBox="0 0 50 50" width="24" height="24">
+                    <circle cx="25" cy="25" r="20" fill="none" stroke="#1565c0" stroke-width="5" stroke-dasharray="31.4 31.4">
+                </svg>
+                <div id="download-status-message">Initializing download...</div>
+            </div>
+            
+            <div class="btns-container">
+                <a href="/" class="btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 12H5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 19l-7-7 7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Back to Home
+                </a>
+                <a href="#" class="btn btn-success btn-disabled" id="download-file-btn" style="display: none;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M7 10l5 5 5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 15V3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Download File
+                </a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            &copy; 2025 YouTube Downloader - Use responsibly and respect copyright laws
+        </div>
+    </div>
+    
+    <script>
+        // Retrieve video_id from the server
+        const videoId = "{{ video_id }}";
+        const url = "{{ url }}";
+        const formatId = "{{ format_id }}";
+        
+        // Initialize variables
+        let checkProgressInterval;
+        let isCompleted = false;
+        
+        // DOM elements
+        const progressBar = document.getElementById("download-progress-bar");
+        const progressText = document.getElementById("download-progress-text");
+        const downloadStatusText = document.getElementById("download-status-text");
+        const downloadStatusContainer = document.getElementById("download-status-container");
+        const downloadStatusMessage = document.getElementById("download-status-message");
+        const downloadFileBtn = document.getElementById("download-file-btn");
+        
+        // Function to update progress UI
+        function updateProgressUI(data) {
+            // Update progress bar and text
+            const percentage = data.percentage || 0;
+            progressBar.style.width = `${percentage}%`;
+            progressText.innerText = `${percentage}%`;
+            
+            // Update status
+            downloadStatusText.innerText = data.status.charAt(0).toUpperCase() + data.status.slice(1);
+            
+            // Update status container and message based on status
+            downloadStatusContainer.className = `download-status status-${data.status.toLowerCase()}`;
+            
+            if (data.status === "downloading") {
+                downloadStatusMessage.innerText = `Downloading video (${percentage}%)...`;
+            } else if (data.status === "processing") {
+                downloadStatusMessage.innerText = "Processing the downloaded video...";
+            } else if (data.status === "complete") {
+                downloadStatusMessage.innerText = "Download complete! Click the button below to save the file.";
+                // Show download file button
+                downloadFileBtn.style.display = "inline-flex";
+                downloadFileBtn.classList.remove("btn-disabled");
+                downloadFileBtn.href = `/get_file/${videoId}`;
+                
+                // Stop checking for progress
+                clearInterval(checkProgressInterval);
+                isCompleted = true;
+            } else if (data.status === "error") {
+                downloadStatusMessage.innerText = `Error: ${data.error_message || "Something went wrong with the download."}`;
+                clearInterval(checkProgressInterval);
+            }
+        }
+        
+        // Function to check download progress
+        function checkProgress() {
+            fetch(`/get_progress/${videoId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status !== "not_found") {
+                        updateProgressUI(data);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error checking progress:", error);
+                });
+        }
+        
+        // Start checking progress when page loads
+        document.addEventListener("DOMContentLoaded", function() {
+            // Check progress immediately on page load
+            checkProgress();
+            
+            // Then check every second
+            checkProgressInterval = setInterval(checkProgress, 1000);
+        });
+    </script>
+</body>
+</html>
